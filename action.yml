@@ -30,15 +30,15 @@ runs:
   using: "composite"
   steps:
     - name: Generate image version
-      if: inputs.image_version == ""
+      if: inputs.image_version == ''
       run: |
-        export IMAGE_VERSION="$(echo "$GITHUB_SHA" | head -c 8)"
+        export IMAGE_VERSION="$(echo '$GITHUB_SHA' | head -c 8)"
         echo "IMAGE_VERSION=$IMAGE_VERSION" >> $GITHUB_ENV
       shell: bash
 
     - name: Generate image tag
       run: |
-        export IMAGE_TAG="${{ format("cr.yandex/{0}/{1}:{2}", $CR_ID, $NAME, $TAG) }}"
+        export IMAGE_TAG="${{ format('cr.yandex/{0}/{1}:{2}', $CR_ID, $NAME, $TAG) }}"
         echo "IMAGE_TAG=IMAGE_TAG" >> $GITHUB_ENV
       env:
         CR_ID: ${{ inputs.registry_id }}
