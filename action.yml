@@ -32,18 +32,18 @@ runs:
     - name: Generate image version
       if: inputs.image_version == ''
       run: |
-        export IMAGE_VERSION="$(echo '$GITHUB_SHA' | head -c 8)"
+        export IMAGE_VERSION="$(echo ${{ github.SHA }} | head -c 8)"
         echo "IMAGE_VERSION=$IMAGE_VERSION" >> $GITHUB_ENV
       shell: bash
 
     - name: Generate image tag
       run: |
-        export IMAGE_TAG="${{ format('cr.yandex/{0}/{1}:{2}', $CR_ID, $NAME, $TAG) }}"
-        echo "IMAGE_TAG=IMAGE_TAG" >> $GITHUB_ENV
+        export IMAGE_TAG="${{ format('cr.yandex/{0}/{1}:{2}', '$CR_ID', '$NAME', '$TAG') }}"
+        echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
       env:
         CR_ID: ${{ inputs.registry_id }}
         NAME: ${{ inputs.image_name }}
-        TAG: ${{ inputs.image_version || env.IMAGE_BERSION }}
+        TAG: ${{ inputs.image_version || env.IMAGE_VERSION }}
       shell: bash
 
     - name: Login into YC Container Registry
@@ -58,4 +58,6 @@ runs:
         echo "Pushing image $IMAGE_TAG"
         docker build . -t $IMAGE_TAG
         docker push $IMAGE_TAG
+      env:
+        IMAGE_TAG: ${{ env.IMAGE_TAG }}
       shell: bash
