@@ -1,0 +1,61 @@
+name: "Yandex Cloud Container Registry Build & Publish"
+author: "Roman Vlasenko"
+description: "Build and publish a Docker image to the Yandex Cloud container registry"
+
+inputs:
+  login_method:
+    description: "YC login method (used as username)."
+    required: true
+    default: 'json_key'
+  auth_key:
+    description: "YC authentication key, base64 encoded (used as password)"
+    required: true
+  registry_id:
+    description: "YC container registry ID."
+    required: true
+  image_name:
+    description: "Image name (without the tag part)."
+    required: true
+  image_version:
+    description: "Image version. Defaults to the first 8 characters of GITHUB_SHA."
+    required: false
+    default: ""
+
+outputs:
+  image_tag:
+    description: "Final image tag."
+    value: ${{ env.IMAGE_TAG }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Generate image version
+      if: inputs.image_version == ''
+      run: |
+        export IMAGE_VERSION="$(echo '$GITHUB_SHA' | head -c 8)"
+        echo "IMAGE_VERSION=$IMAGE_VERSION" >> $GITHUB_ENV
+      shell: bash
+
+    - name: Generate image tag
+      run: |
+        export IMAGE_TAG="${{ format('cr.yandex/{0}/{1}:{2}', $CR_ID, $NAME, $TAG) }}"
+        echo "IMAGE_TAG=IMAGE_TAG" >> $GITHUB_ENV
+      env:
+        CR_ID: ${{ inputs.registry_id }}
+        NAME: ${{ inputs.image_name }}
+        TAG: ${{ inputs.image_version || env.IMAGE_BERSION }}
+      shell: bash
+
+    - name: Login into YC Container Registry
+      run: echo $PASSWORD | base64 --decode | docker login --username $USERNAME --password-stdin cr.yandex
+      env:
+        USERNAME: ${{ inputs.login_method }}
+        PASSWORD: ${{ inputs.auth_key }}
+      shell: bash
+
+    - name: Build and push the image
+      run: |
+        echo "Pushing image $IMAGE_TAG"
+        docker build . -t $IMAGE_TAG
+        docker push $IMAGE_TAG
+      shell: bash
