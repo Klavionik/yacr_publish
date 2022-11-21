@@ -39,7 +39,7 @@ runs:
     - name: Generate image tag
       id: generate-tag
       run: |
-        export IMAGE_TAG="${{ format('cr.yandex/{0}/{1}:{2}', $CR_ID, $NAME, $TAG) }}"
+        export IMAGE_TAG="${{ format('cr.yandex/{0}/{1}:{2}', '$CR_ID', '$NAME', '$TAG') }}"
         echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
       env:
         CR_ID: ${{ inputs.registry_id }}
