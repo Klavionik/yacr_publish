@@ -24,7 +24,7 @@ inputs:
 outputs:
   image_tag:
     description: "Final image tag."
-    value: ${{ env.IMAGE_TAG }}
+    value: ${{ steps.generate-tag.outputs.image_tag }}
 
 runs:
   using: "composite"
@@ -37,9 +37,10 @@ runs:
       shell: bash
 
     - name: Generate image tag
+      id: generate-tag
       run: |
         export IMAGE_TAG="${{ format('cr.yandex/{0}/{1}:{2}', $CR_ID, $NAME, $TAG) }}"
-        echo "IMAGE_TAG=IMAGE_TAG" >> $GITHUB_ENV
+        echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
       env:
         CR_ID: ${{ inputs.registry_id }}
         NAME: ${{ inputs.image_name }}
@@ -58,4 +59,6 @@ runs:
         echo "Pushing image $IMAGE_TAG"
         docker build . -t $IMAGE_TAG
         docker push $IMAGE_TAG
+      env:
+        IMAGE_TAG: ${{ steps.generate-tag.outputs.image_tag }}
       shell: bash
