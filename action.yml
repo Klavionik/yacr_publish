@@ -32,7 +32,7 @@ runs:
     - name: Generate image version
       if: inputs.image_version == ''
       run: |
-        export IMAGE_VERSION="$(echo '$GITHUB_SHA' | head -c 8)"
+        export IMAGE_VERSION="$(echo ${{ github.SHA }} | head -c 8)"
         echo "IMAGE_VERSION=$IMAGE_VERSION" >> $GITHUB_ENV
       shell: bash
 
@@ -44,7 +44,7 @@ runs:
       env:
         CR_ID: ${{ inputs.registry_id }}
         NAME: ${{ inputs.image_name }}
-        TAG: ${{ inputs.image_version || env.IMAGE_BERSION }}
+        TAG: ${{ inputs.image_version || env.IMAGE_VERSION }}
       shell: bash
 
     - name: Login into YC Container Registry
